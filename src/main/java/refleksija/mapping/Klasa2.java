@@ -1,4 +1,4 @@
-package refleksija.mapiranje;
+package refleksija.mapping;
 
 import lombok.Builder;
 import lombok.Data;

@@ -1,4 +1,4 @@
-package refleksija.mapiranje;
+package refleksija.mapping;
 
 import org.mapstruct.Mapper;
 import org.mapstruct.Mapping;
@@ -14,7 +14,7 @@ public interface K1K2Maper {
     K1K2Maper INSTANCE = Mappers.getMapper(K1K2Maper.class);
 
     @Mappings({
-        @Mapping(source = "id", target = "idK"),
+        @Mapping(source = "vred", target = "idK"),
         @Mapping(source = "naziv", target = "naziv"),
         @Mapping(source = "kol", target = "kolicina"),
         @Mapping(source = "vred", target = "vrednost"),
@@ -23,7 +23,7 @@ public interface K1K2Maper {
     })
 
     /*
-    @Mapping(source = "idK", target = "id")
+    @Mapping(source = "idK", target = "cardinality")
     @Mapping(source = "kol", target = "kolicina")
     */
 

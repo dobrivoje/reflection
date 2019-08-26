@@ -1,4 +1,4 @@
-package refleksija.mapiranje;
+package refleksija.mapping;
 
 /**
  * @author д06ри, dobri7@gmail.com
@@ -12,7 +12,7 @@ public class K1K2MaperImplementacija /*implements K1K2Maper */ {
             return null;
 
         Klasa2 dest = Klasa2.builder()
-            .idK(source.getId())
+            .idK(source.getCardinality())
             .kolicina(source.getKol())
             .naziv(source.getNaziv())
             .vrednost(source.getVred())
