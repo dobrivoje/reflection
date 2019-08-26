@@ -1,13 +1,28 @@
 package marketing;
 
 import lombok.NonNull;
+import org.paukov.combinatorics3.Generator;
 
 import java.lang.reflect.Field;
 import java.util.*;
+import java.util.stream.Collectors;
 
 public class ValidatorFacility {
 
     public static final Map<Priority, Double> EMPTY_PRIORITY = new HashMap<>();
+
+    //<editor-fold desc="PriorityPrice">
+    public class PriorityPrice {
+
+        public Priority priority;
+        public double price;
+
+        public PriorityPrice(Priority priority, double price) {
+            this.priority = priority;
+            this.price = price;
+        }
+    }
+    //</editor-fold>
 
     /**
      * Vrati skup indeksa sa deklarisnih polja klase Lubenica
@@ -44,9 +59,9 @@ public class ValidatorFacility {
         return ConvertAllToIds(Arrays.asList(genericObjects));
     }
 
-    public static <T> Map<T, Set<Integer>> ConvertAllToIds(Collection<T> genericObjects) throws IllegalAccessException {
+    public static <T> Map<T, Set<Integer>> ConvertAllToIds(@NonNull Collection<T> genericObjects) throws IllegalAccessException {
         Map<T, Set<Integer>> ms = new HashMap<>();
-        if (genericObjects != null && !genericObjects.isEmpty())
+        if (!genericObjects.isEmpty())
             for (T obj : genericObjects)
                 ms.put(obj, ConvertToIds(obj));
 
@@ -81,18 +96,18 @@ public class ValidatorFacility {
 
                 Integer priority = pdMap.getKey();
                 Double discount = pdMap.getValue();
-                Set<Integer> action = E.getKey();
+                Set<Integer> actionSet = E.getKey();
 
-                if (request.containsAll(action)) {
-                    request.removeAll(action);
+                if (request.containsAll(actionSet)) {
+                    request.removeAll(actionSet);
 
                     Priority prio = Priority.builder()
                         .priority(priority)
-                        .cardinality(action.size())
+                        .cardinality(actionSet.size())
                         .build();
 
                     rezultat.put(prio, discount);
-                    System.err.println("akcija : " + action + ", prio : " + priority
+                    System.err.println("akcija : " + actionSet + ", prio : " + priority
                         + ", cardinality : " + prio.getCardinality() + ", DiscountWithExcluding : " + discount);
 
                     DiscountWithExcluding(marketingActions, request, rezultat);
@@ -110,9 +125,29 @@ public class ValidatorFacility {
      * @param request          Zahtev koji dobijamo, pa za njega računamo krajnji DiscountWithExcluding<br>
      * @return
      */
-    // TODO uraditi...
-    public static void DiscountForAll(@NonNull Map<Set<Integer>, Map<Integer, Double>> marketingActions
-        , @NonNull Set<Integer> request, Map<Priority, Double> rezultat) {
+    public static List<PriorityPrice> DiscountForAll(@NonNull Map<List<Integer>, Map<Integer, Double>> marketingActions
+        , @NonNull List<Integer> request) {
 
+        List<PriorityPrice> result = new LinkedList<>();
+
+        List<List<Integer>> allCombinations = Generator.subset(request).simple().stream().collect(Collectors.toList());
+        for (List<Integer> comb : allCombinations) {
+            Map<Integer, Double> v = marketingActions.get(comb);
+            if (v != null && !v.isEmpty()) {
+                Map.Entry<Integer, Double> E = v.entrySet().iterator().next();
+                int marketingActionPriority = E.getKey();
+                double marketingActionPrice = E.getValue();
+
+                Priority priority = Priority.builder()
+                    .cardinality(comb.size())
+                    .priority(marketingActionPriority)
+                    .build();
+
+                result.add(new ValidatorFacility().new PriorityPrice(priority, marketingActionPrice));
+            }
+        }
+
+        Collections.sort(result, (pp1, pp2) -> pp2.priority.getCardinality() - pp1.priority.getCardinality());
+        return result;
     }
 }

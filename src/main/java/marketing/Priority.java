@@ -15,10 +15,6 @@ public class Priority {
     @EqualsAndHashCode.Include
     private final int id = counter++;
 
-    /**
-     * kardinalnost skupa,<br>
-     * po kom grupišemo prioritete.
-     */
     @EqualsAndHashCode.Include
     private Integer cardinality;
 

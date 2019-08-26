@@ -1,6 +1,7 @@
 import marketing.Lubenica;
 import marketing.Priority;
 import marketing.ValidatorFacility;
+import marketing.ValidatorFacility.PriorityPrice;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
@@ -24,10 +25,11 @@ public class Test1 extends MyTestInfra {
     static final int HILJADA = 1_000;
 
     static List<Lubenica> milionLubenicaList = new LinkedList<>();
-    static Map<Set<Integer>, Map<Integer, Double>> marketingAkcije = new LinkedHashMap<>();
+    static Map<List<Integer>, Map<Integer, Double>> marketingActions = new HashMap<>();
     //</editor-fold>
 
     @Before
+    @Ignore
     public void inits() {
         Long initTime = new MillisecondsMeasurement()
             .submit(() -> {
@@ -37,41 +39,46 @@ public class Test1 extends MyTestInfra {
 
         System.err.println("uk. inicijalizacija milion lubenica u 1 thread-u u (ms) : " + initTime);
 
-        //<editor-fold desc="init marketing akcija...">
-        Set<Integer> komb1 = new LinkedHashSet<>(Arrays.asList(1, 2, 3));
+        //<editor-fold desc="init mark. akcija">
+        List<Integer> komb1 = new LinkedList<>(Arrays.asList(1, 2, 3));
         Map<Integer, Double> pCena1 = new HashMap<>();
         pCena1.put(1, 10.0);
-        marketingAkcije.put(komb1, pCena1);
+        marketingActions.put(komb1, pCena1);
 
-        Set<Integer> komb2 = new LinkedHashSet<>(Arrays.asList(1, 3, 5));
+        List<Integer> komb2 = new LinkedList<>(Arrays.asList(1, 3, 5));
         Map<Integer, Double> pCena2 = new HashMap<>();
         pCena2.put(2, 15.0);
-        marketingAkcije.put(komb2, pCena2);
+        marketingActions.put(komb2, pCena2);
 
-        Set<Integer> komb3 = new LinkedHashSet<>(Arrays.asList(4, 5, 6));
+        List<Integer> komb3 = new LinkedList<>(Arrays.asList(4, 5, 6));
         Map<Integer, Double> pCena3 = new HashMap<>();
         pCena3.put(3, 12.0);
-        marketingAkcije.put(komb3, pCena3);
+        marketingActions.put(komb3, pCena3);
 
-        Set<Integer> komb4 = new LinkedHashSet<>(Arrays.asList(2, 7, 8));
+        List<Integer> komb4 = new LinkedList<>(Arrays.asList(2, 7, 8));
         Map<Integer, Double> pCena4 = new HashMap<>();
         pCena4.put(4, 5.0);
-        marketingAkcije.put(komb4, pCena4);
+        marketingActions.put(komb4, pCena4);
 
-        Set<Integer> komb5 = new LinkedHashSet<>(Arrays.asList(10));
+        List<Integer> komb5 = new LinkedList<>(Arrays.asList(10));
         Map<Integer, Double> pCena5 = new HashMap<>();
         pCena5.put(5, 2.0);
-        marketingAkcije.put(komb5, pCena5);
+        marketingActions.put(komb5, pCena5);
 
-        Set<Integer> komb6 = new LinkedHashSet<>(Arrays.asList(11, 7));
+        List<Integer> komb6 = new LinkedList<>(Arrays.asList(1, 2));
         Map<Integer, Double> pCena6 = new HashMap<>();
         pCena6.put(6, 1.5);
-        marketingAkcije.put(komb6, pCena6);
+        marketingActions.put(komb6, pCena6);
 
-        Set<Integer> komb7 = new LinkedHashSet<>(Arrays.asList(1, 4));
+        List<Integer> komb7 = new LinkedList<>(Arrays.asList(1, 3));
         Map<Integer, Double> pCena7 = new HashMap<>();
-        pCena7.put(7, 1.5);
-        marketingAkcije.put(komb7, pCena7);
+        pCena7.put(7, 1.1);
+        marketingActions.put(komb7, pCena7);
+
+        List<Integer> komb8 = new LinkedList<>(Arrays.asList(1, 3));
+        Map<Integer, Double> pCena8 = new HashMap<>();
+        pCena8.put(8, 1.15);
+        marketingActions.put(komb8, pCena8);
         //</editor-fold>
     }
 
@@ -149,7 +156,7 @@ public class Test1 extends MyTestInfra {
         Set<Integer> request = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 11));
         Map<Priority, Double> priorityByPrice = new LinkedHashMap<>();
 
-        ValidatorFacility.DiscountWithExcluding(marketingAkcije, request, priorityByPrice);
+        // ValidatorFacility.DiscountWithExcluding(marketingActions, request, priorityByPrice);
 
         System.err.println("preostali artikli bez popusta : " + request);
         System.err.println("preostali artikli bez popusta : " + priorityByPrice);
@@ -228,14 +235,50 @@ public class Test1 extends MyTestInfra {
     }
 
     @Test
+    @Ignore
     public void test7_performanse_1000_Lubenica() {
         MeasureTime.Measurement m = izmeriPerformanseKodKreiranjaLubenica(HILJADA);
         System.err.println("trajanje operacije : " + m.getDelta() + ", rezultat : " + m.getResult());
     }
 
     @Test
+    @Ignore
     public void test8_performanse_1000_000_Lubenica() {
         MeasureTime.Measurement m = izmeriPerformanseKodKreiranjaLubenica(MILION);
         System.err.println("trajanje operacije : " + m + ", rezultat : " + m.getResult());
+    }
+
+    @Test
+    @Ignore
+    public void test9_DiscountsExist() {
+        List<Integer> korisnikIzbor = Arrays.asList(1, 2, 3, 5, 6, 7, 8, 10, 12);
+        List<List<Integer>> allPossibleCombinations =
+            Generator.subset(korisnikIzbor).simple().stream().collect(Collectors.toList());
+
+        List<Map<Integer, Double>> result = new LinkedList<>();
+        for (List<Integer> comb : allPossibleCombinations) {
+            Map<Integer, Double> prioPriceMap = marketingActions.get(comb);
+            if (prioPriceMap != null && !prioPriceMap.isEmpty())
+                result.add(prioPriceMap);
+        }
+
+        Collections.sort(result, Comparator.comparingInt(m -> m.entrySet().iterator().next().getKey()));
+        result.forEach(System.out::println);
+
+        assertTrue(!result.isEmpty());
+    }
+
+    @Test
+    @Ignore
+    public void test10_() {
+        List<Integer> userChoice = Arrays.asList(1, 2, 3, 5, 6, 7, 8, 10, 12);
+        List<PriorityPrice> result = ValidatorFacility.DiscountForAll(marketingActions, userChoice);
+
+        for (PriorityPrice pp : result) {
+            System.err.println("cardinality:" + pp.priority.getCardinality()
+                + ", priority:" + pp.priority.getPriority() + " -> price=" + pp.price);
+        }
+
+        assertTrue(true);
     }
 }
