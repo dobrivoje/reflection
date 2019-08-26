@@ -1,4 +1,4 @@
-package refleksija;
+package marketing;
 
 import lombok.Builder;
 import lombok.Data;
