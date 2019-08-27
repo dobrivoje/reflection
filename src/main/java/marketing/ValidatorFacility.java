@@ -1,6 +1,7 @@
 package marketing;
 
 import lombok.NonNull;
+import org.omg.CORBA.PUBLIC_MEMBER;
 import org.paukov.combinatorics3.Generator;
 
 import java.lang.reflect.Field;
@@ -9,6 +10,13 @@ import java.util.stream.Collectors;
 
 public class ValidatorFacility {
 
+    /**
+     * Discount type
+     */
+    public enum DISCOUNT {
+        ABSOLUTE, PERCENT;
+    }
+
     public static final Map<Priority, Double> EMPTY_PRIORITY = new HashMap<>();
 
     //<editor-fold desc="PriorityPrice">
@@ -16,10 +24,17 @@ public class ValidatorFacility {
 
         public Priority priority;
         public double price;
+        public DISCOUNT discount;
 
         public PriorityPrice(Priority priority, double price) {
             this.priority = priority;
             this.price = price;
+            this.discount = DISCOUNT.ABSOLUTE;
+        }
+
+        public PriorityPrice(Priority priority, double price, DISCOUNT discount) {
+            this(priority, price);
+            this.discount = discount;
         }
     }
     //</editor-fold>
