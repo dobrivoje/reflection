@@ -82,6 +82,19 @@ public class Test1 extends MyTestInfra {
         //</editor-fold>
     }
 
+    @Test
+    @Ignore
+    public void test9_rnd_interval() {
+        int low = -3, up = 3;
+
+        for (int i = 0; i < 20; i++) {
+            int rnd = nextRandomInt(low, up);
+            System.err.println("rnd : " + rnd);
+
+            assertTrue(rnd >= low && rnd <= up);
+        }
+    }
+
     private Lubenica napraviLubenicu(int i, String s, boolean yesNo) {
         return Lubenica.builder()
             .id(i)

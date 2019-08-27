@@ -17,8 +17,12 @@ public class MyTestInfra extends Stopwatch {
         return random.nextBoolean();
     }
 
-    protected int nextRandomInt(int limit, boolean withZero) {
-        return (withZero ? 0 : 1) + random.nextInt(limit);
+    protected int nextRandomInt(int upperLimit, boolean withZero) {
+        return (withZero ? 0 : 1) + random.nextInt(upperLimit);
+    }
+
+    protected int nextRandomInt(int intervalLow, int intervalUp) {
+        return (int) (intervalLow + (intervalUp - intervalLow) * random.nextDouble());
     }
 
     protected int nextRandomInt(boolean withZero) {
