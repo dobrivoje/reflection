@@ -1,18 +1,20 @@
 import marketing.Lubenica;
 import marketing.Priority;
+import marketing.PriorityDiscount;
 import marketing.ValidatorFacility;
-import marketing.ValidatorFacility.PriorityPrice;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.paukov.combinatorics3.Generator;
 
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import java.util.stream.Stream;
 
 import static marketing.ValidatorFacility.ConvertAllToIds;
+import static marketing.ValidatorFacility.DISCOUNT_TYPE.*;
 import static org.junit.Assert.*;
 
 /**
@@ -25,7 +27,7 @@ public class Test1 extends MyTestInfra {
     static final int HILJADA = 1_000;
 
     static List<Lubenica> milionLubenicaList = new LinkedList<>();
-    static Map<List<Integer>, Map<Integer, Double>> marketingActions = new HashMap<>();
+    static Map<List<Integer>, PriorityDiscount> marketingActions = new HashMap<>();
     //</editor-fold>
 
     @Before
@@ -40,44 +42,52 @@ public class Test1 extends MyTestInfra {
         System.err.println("uk. inicijalizacija milion lubenica u 1 thread-u u (ms) : " + initTime);
 
         //<editor-fold desc="init mark. akcija">
-        List<Integer> komb1 = new LinkedList<>(Arrays.asList(1, 2, 3));
-        Map<Integer, Double> pCena1 = new HashMap<>();
-        pCena1.put(1, 10.0);
+        List<Integer> komb1 = Arrays.asList(1, 2, 3);
+        PriorityDiscount pCena1 = PriorityDiscount.builder().discount(10).discountType(PERCENT).priority(
+            Priority.builder().priority(1).build()
+        ).build();
         marketingActions.put(komb1, pCena1);
 
-        List<Integer> komb2 = new LinkedList<>(Arrays.asList(1, 3, 5));
-        Map<Integer, Double> pCena2 = new HashMap<>();
-        pCena2.put(2, 15.0);
+        List<Integer> komb2 = Arrays.asList(1, 3, 5);
+        PriorityDiscount pCena2 = PriorityDiscount.builder().discount(15).discountType(ABSOLUTE).priority(
+            Priority.builder().priority(2).build()
+        ).build();
         marketingActions.put(komb2, pCena2);
 
-        List<Integer> komb3 = new LinkedList<>(Arrays.asList(4, 5, 6));
-        Map<Integer, Double> pCena3 = new HashMap<>();
-        pCena3.put(3, 12.0);
+        List<Integer> komb3 = Arrays.asList(4, 5, 6);
+        PriorityDiscount pCena3 = PriorityDiscount.builder().discount(12).discountType(ABSOLUTE).priority(
+            Priority.builder().priority(3).build()
+        ).build();
         marketingActions.put(komb3, pCena3);
 
-        List<Integer> komb4 = new LinkedList<>(Arrays.asList(2, 7, 8));
-        Map<Integer, Double> pCena4 = new HashMap<>();
-        pCena4.put(4, 5.0);
+        List<Integer> komb4 = Arrays.asList(2, 7, 8);
+        PriorityDiscount pCena4 = PriorityDiscount.builder().discount(5).discountType(DIRECT).priority(
+            Priority.builder().priority(4).build()
+        ).build();
         marketingActions.put(komb4, pCena4);
 
-        List<Integer> komb5 = new LinkedList<>(Arrays.asList(10));
-        Map<Integer, Double> pCena5 = new HashMap<>();
-        pCena5.put(5, 2.0);
+        List<Integer> komb5 = Arrays.asList(10);
+        PriorityDiscount pCena5 = PriorityDiscount.builder().discount(2).discountType(DIRECT).priority(
+            Priority.builder().priority(5).build()
+        ).build();
         marketingActions.put(komb5, pCena5);
 
-        List<Integer> komb6 = new LinkedList<>(Arrays.asList(1, 2));
-        Map<Integer, Double> pCena6 = new HashMap<>();
-        pCena6.put(6, 1.5);
+        List<Integer> komb6 = Arrays.asList(1, 2);
+        PriorityDiscount pCena6 = PriorityDiscount.builder().discount(1.5).discountType(DIRECT).priority(
+            Priority.builder().priority(6).build()
+        ).build();
         marketingActions.put(komb6, pCena6);
 
-        List<Integer> komb7 = new LinkedList<>(Arrays.asList(1, 3));
-        Map<Integer, Double> pCena7 = new HashMap<>();
-        pCena7.put(7, 1.1);
+        List<Integer> komb7 = Arrays.asList(1, 3);
+        PriorityDiscount pCena7 = PriorityDiscount.builder().discount(1.1).priority(
+            Priority.builder().priority(7).build()
+        ).build();
         marketingActions.put(komb7, pCena7);
 
-        List<Integer> komb8 = new LinkedList<>(Arrays.asList(1, 3));
-        Map<Integer, Double> pCena8 = new HashMap<>();
-        pCena8.put(8, 1.15);
+        List<Integer> komb8 = Arrays.asList(1, 3);
+        PriorityDiscount pCena8 = PriorityDiscount.builder().discount(1.15).priority(
+            Priority.builder().priority(8).build()
+        ).build();
         marketingActions.put(komb8, pCena8);
         //</editor-fold>
     }
@@ -166,7 +176,7 @@ public class Test1 extends MyTestInfra {
     @Test
     @Ignore
     public void test3() {
-        Set<Integer> request = new HashSet<>(Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 11));
+        List<Integer> request = Arrays.asList(1, 2, 3, 4, 5, 6, 7, 8, 11);
         Map<Priority, Double> priorityByPrice = new LinkedHashMap<>();
 
         // ValidatorFacility.DiscountWithExcluding(marketingActions, request, priorityByPrice);
@@ -180,8 +190,8 @@ public class Test1 extends MyTestInfra {
     @Test
     @Ignore
     public void test4_kombinacijebezPonavljanja() {
-        Set<String> slova = new HashSet<>(Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h"));
-        Set<List<String>> kombinacijeSlova = new LinkedHashSet<>();
+        List<String> slova = Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h");
+        List<List<String>> kombinacijeSlova = new ArrayList<>();
 
         Generator.combination(slova)
             .simple(3)
@@ -263,19 +273,16 @@ public class Test1 extends MyTestInfra {
 
     @Test
     @Ignore
-    public void test9_DiscountsExist() {
-        List<Integer> korisnikIzbor = Arrays.asList(1, 2, 3, 5, 6, 7, 8, 10, 12);
-        List<List<Integer>> allPossibleCombinations =
-            Generator.subset(korisnikIzbor).simple().stream().collect(Collectors.toList());
+    public void test91_DiscountsExist() {
+        List<Integer> izborKorisnika = Arrays.asList(1, 2, 3, 5, 6, 7, 8, 10, 12);
 
-        List<Map<Integer, Double>> result = new LinkedList<>();
-        for (List<Integer> comb : allPossibleCombinations) {
-            Map<Integer, Double> prioPriceMap = marketingActions.get(comb);
-            if (prioPriceMap != null && !prioPriceMap.isEmpty())
-                result.add(prioPriceMap);
-        }
-
-        Collections.sort(result, Comparator.comparingInt(m -> m.entrySet().iterator().next().getKey()));
+        List<PriorityDiscount> result = ValidatorFacility.DiscountForAllIds(marketingActions, izborKorisnika);
+        Collections.sort(result
+            , Comparator.comparing((PriorityDiscount pd) -> pd.getPriority().cardinality)/*.reversed()*/
+                .thenComparing(
+                    Comparator.comparing((PriorityDiscount pd) -> pd.getDiscountType().ordinal()).reversed()
+                )
+        );
         result.forEach(System.out::println);
 
         assertTrue(!result.isEmpty());
@@ -285,11 +292,98 @@ public class Test1 extends MyTestInfra {
     @Ignore
     public void test10_() {
         List<Integer> userChoice = Arrays.asList(1, 2, 3, 5, 6, 7, 8, 10, 12);
-        List<PriorityPrice> result = ValidatorFacility.DiscountForAll(marketingActions, userChoice);
+        List<PriorityDiscount> result = ValidatorFacility.DiscountForAllIds(marketingActions, userChoice);
 
-        for (PriorityPrice pp : result) {
-            System.err.println("cardinality:" + pp.priority.getCardinality()
-                + ", priority:" + pp.priority.getPriority() + " -> price=" + pp.price);
+        Collections.sort(result, (p1, p2) -> p2.getPriority().priority - p1.getPriority().priority);
+        result.forEach(System.out::println);
+
+        assertTrue(true);
+    }
+
+    @Test
+    @Ignore
+    public void test11_() {
+        //<editor-fold desc="Izbori korisnika init">
+        List<Lubenica> izborKorisnika1 = Arrays.asList(
+            Lubenica.builder().id(1).ketering(true).sorta("ls-1").build()
+            , Lubenica.builder().id(7).ketering(false).sorta("ls-7").build()
+        );
+
+        List<Lubenica> izborKorisnika2 = Arrays.asList(
+            Lubenica.builder().id(1).ketering(true).sorta("ls-1").build()
+            , Lubenica.builder().id(2).ketering(false).sorta("ls-2").build()
+            , Lubenica.builder().id(7).ketering(false).sorta("ls-7").build()
+        );
+
+        List<Lubenica> izborKorisnika3 = Arrays.asList(
+            Lubenica.builder().id(1).ketering(nextRandomBoolean()).sorta("sorta-1").build()
+            , Lubenica.builder().id(2).ketering(nextRandomBoolean()).sorta("sorta-2").build()
+            , Lubenica.builder().id(3).ketering(nextRandomBoolean()).sorta("sorta-3").build()
+            , Lubenica.builder().id(4).ketering(nextRandomBoolean()).sorta("sorta-4").build()
+            , Lubenica.builder().id(5).ketering(nextRandomBoolean()).sorta("sorta-5").build()
+        );
+        //</editor-fold>
+
+        List<List<Lubenica>> izbori = new ArrayList<>();
+        izbori.addAll(Arrays.asList(izborKorisnika1, izborKorisnika2, izborKorisnika3));
+
+        //<editor-fold desc="marketingAkcijeLubenice init">
+        Map<List<Lubenica>, PriorityDiscount> marketingAkcijeLubenice = new HashMap<>();
+        marketingAkcijeLubenice.put(
+            Arrays.asList(
+                Lubenica.builder().id(1).ketering(nextRandomBoolean()).sorta("sorta-1").build()
+                , Lubenica.builder().id(2).ketering(nextRandomBoolean()).sorta("sorta-2").build()
+                , Lubenica.builder().id(3).ketering(nextRandomBoolean()).sorta("sorta-7").build()
+            )
+            , PriorityDiscount.builder().discount(8).discountType(PERCENT)
+                .priority(Priority.builder().priority(5).build()).build()
+        );
+        marketingAkcijeLubenice.put(
+            Arrays.asList(
+                Lubenica.builder().id(1).ketering(nextRandomBoolean()).sorta("sorta-1").build()
+                , Lubenica.builder().id(2).ketering(nextRandomBoolean()).sorta("sorta-2").build()
+                , Lubenica.builder().id(3).ketering(nextRandomBoolean()).sorta("sorta-3").build()
+                , Lubenica.builder().id(4).ketering(nextRandomBoolean()).sorta("sorta-4").build()
+                , Lubenica.builder().id(5).ketering(nextRandomBoolean()).sorta("sorta-5").build()
+            )
+            , PriorityDiscount.builder().discount(20).discountType(PERCENT)
+                .priority(Priority.builder().priority(1).build())
+                .build()
+        );
+        marketingAkcijeLubenice.put(
+            Arrays.asList(
+                Lubenica.builder().id(1).ketering(nextRandomBoolean()).sorta("sorta-1").build()
+                , Lubenica.builder().id(7).ketering(nextRandomBoolean()).sorta("sorta-7").build()
+            )
+            , PriorityDiscount.builder().discount(5).discountType(ABSOLUTE)
+                .priority(Priority.builder().priority(4).build()).build()
+        );
+        marketingAkcijeLubenice.put(
+            Arrays.asList(
+                Lubenica.builder().id(3).ketering(nextRandomBoolean()).sorta("sorta-1").build()
+                , Lubenica.builder().id(5).ketering(nextRandomBoolean()).sorta("sorta-7").build()
+            )
+            , PriorityDiscount.builder().discount(5).discountType(DIRECT)
+                .priority(Priority.builder().priority(3).build()).build()
+        );
+        //</editor-fold>
+
+        List<PriorityDiscount> result = ValidatorFacility.DiscountForAll(marketingAkcijeLubenice, izborKorisnika1);
+        Collections.sort(result, (p1, p2) -> (int) (p2.getPriority().priority - p1.getPriority().priority));
+
+        System.err.println("*****************************************************************");
+//        result.forEach(System.out::println);
+
+        System.err.println();
+
+        for (List<Lubenica> pojednacniIzbor : izbori) {
+            List<PriorityDiscount> pojPrioDisc = ValidatorFacility.DiscountForAll(marketingAkcijeLubenice, pojednacniIzbor);
+            Collections.sort(pojPrioDisc, (p1, p2) -> (int) (p2.getPriority().priority - p1.getPriority().priority));
+
+            System.err.println("----------------------------------------------");
+            System.err.println(pojednacniIzbor);
+            System.err.println("----------------------------------------------");
+            pojPrioDisc.forEach(System.out::println);
         }
 
         assertTrue(true);

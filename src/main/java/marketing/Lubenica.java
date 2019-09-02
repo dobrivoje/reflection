@@ -15,7 +15,7 @@ public class Lubenica {
     @EqualsAndHashCode.Include
     private int id;
 
-    @EqualsAndHashCode.Include
+    @EqualsAndHashCode.Exclude
     private String sorta;
 
     @Property(id = 0)

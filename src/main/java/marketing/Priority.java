@@ -10,14 +10,14 @@ import lombok.EqualsAndHashCode;
 public class Priority {
 
     @EqualsAndHashCode.Exclude
-    private static int counter = 0;
+    public static int counter = 0;
 
     @EqualsAndHashCode.Include
-    private final int id = counter++;
+    public final int id = counter++;
 
     @EqualsAndHashCode.Include
-    private Integer cardinality;
+    public int cardinality;
 
     @EqualsAndHashCode.Include
-    private Integer priority;
+    public int priority;
 }
