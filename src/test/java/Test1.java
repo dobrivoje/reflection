@@ -388,4 +388,56 @@ public class Test1 extends MyTestInfra {
 
         assertTrue(true);
     }
+
+    @Test
+    @Ignore
+    public void test12_compose_andThen() {
+        Function<Integer, Integer> dupliraj = e -> 2 * e;
+        Function<Integer, Integer> kvadrat = e -> e * e;
+        Function<Integer, Integer> decrement = e -> e - 1;
+        Integer v11 = dupliraj.compose(kvadrat).apply(3);
+        Integer v12 = dupliraj.andThen(kvadrat).apply(3);
+        Integer v13 = dupliraj.andThen(kvadrat).andThen(decrement).apply(3);
+        Integer v14 = dupliraj.andThen(kvadrat).compose(decrement).compose(decrement).andThen(dupliraj).apply(5);
+
+        System.err.println("v11=" + v11 + ", v12=" + v12);
+        System.err.println("v13=" + v13 + ", v14=" + v14);
+
+        assertTrue(true);
+    }
+
+    @Test
+    public void test13_validacije_funk_interfejs() {
+        // podaci za validatore !
+        Integer[] ulaz1 = new Integer[]{4, 4, 3, 4, 2, 1};
+        Boolean[] ulaz2 = new Boolean[]{true, true, true, false, false};
+        Object[][] ulazi = new Object[][]{ulaz1, ulaz1, ulaz2};
+
+        // 1. validator
+        Function<Integer[], Boolean> val1 = input -> input.length > 3;
+
+        // 2. validator
+        Function<Integer[], Boolean> val2 = input -> Stream.of(input)
+            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+            .entrySet().stream().anyMatch(p -> p.getKey() == 4 && p.getValue() >= 3);
+
+        // 3. validator
+        Function<Boolean[], Boolean> val3 = input -> Stream.of(input)
+            .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()))
+            .entrySet().stream().anyMatch(p -> p.getKey() && p.getValue() > 2);
+
+        Function<Object[], Boolean>[] validators = new Function[]{val1, val2, val3};
+
+        // moraju svi da budu "true"
+        boolean res = false;
+        int i = 0;
+        for (Function<Object[], Boolean> v : validators) {
+            res = v.apply(ulazi[i++]);
+            if (!res) break;
+        }
+
+        System.err.println("res=" + res);
+
+        assertTrue(res);
+    }
 }

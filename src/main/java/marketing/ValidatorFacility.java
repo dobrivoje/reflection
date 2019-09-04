@@ -134,7 +134,7 @@ public class ValidatorFacility {
                     .priority(marketingActionPriority)
                     .build();
 
-                v.priority = priority;
+                v.setPriority(priority);
                 result.add(v);
             }
         }
