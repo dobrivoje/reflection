@@ -1,12 +1,20 @@
+import com.dobri.hibernate.Relation;
+import com.dobri.hibernate.User;
 import marketing.Lubenica;
 import marketing.Priority;
 import marketing.PriorityDiscount;
 import marketing.ValidatorFacility;
+import org.hibernate.Session;
+import org.hibernate.SessionFactory;
+import org.hibernate.Transaction;
+import org.hibernate.cfg.Configuration;
 import org.junit.Before;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.paukov.combinatorics3.Generator;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -161,7 +169,8 @@ public class Test1 extends MyTestInfra {
 
         System.err.println(ValidatorFacility.ConvertToIds(lubenica1));
         System.err.println(ValidatorFacility.ConvertToIds(lubenica2));
-        System.err.println(ConvertAllToIds(lubenica1, lubenica2));
+        System.err.println(ConvertAllToIds(lubenica1));
+        System.err.println(ConvertAllToIds(lubenica2));
 
         assertFalse(lubenica1.equals(lubenica2));
     }
@@ -169,7 +178,17 @@ public class Test1 extends MyTestInfra {
     @Test
     @Ignore
     public void test2() throws IllegalAccessException {
-        Map<Lubenica, Set<Integer>> lubenicaSetMap = ConvertAllToIds(milionLubenicaList);
+        Map<Lubenica, Set<Integer>> lubenicaSetMap = new HashMap<>();
+        Long initTime = new MillisecondsMeasurement()
+            .submit(() -> {
+                try {
+                    lubenicaSetMap.putAll(ConvertAllToIds(milionLubenicaList));
+                } catch (IllegalAccessException e) {
+                }
+            }).getDelta();
+
+        System.err.println("Trajanje : " + initTime);
+
         assertTrue(true /*lubenicaSetMap.size() == MILION*/);
     }
 
@@ -190,13 +209,15 @@ public class Test1 extends MyTestInfra {
     @Test
     @Ignore
     public void test4_kombinacijebezPonavljanja() {
-        List<String> slova = Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h");
+        List<String> slova = Arrays.asList("a", "b", "c", "d", "e", "f", "g", "h", "1", "2", "3", "4", "5");
         List<List<String>> kombinacijeSlova = new ArrayList<>();
 
         Generator.combination(slova)
-            .simple(3)
+            .simple(6)
             .stream()
             .forEach(kombinacija -> kombinacijeSlova.add(kombinacija));
+
+        kombinacijeSlova.forEach(System.out::println);
 
         assertTrue(true);
     }
@@ -278,10 +299,8 @@ public class Test1 extends MyTestInfra {
 
         List<PriorityDiscount> result = ValidatorFacility.DiscountForAllIds(marketingActions, izborKorisnika);
         Collections.sort(result
-            , Comparator.comparing((PriorityDiscount pd) -> pd.getPriority().cardinality)/*.reversed()*/
-                .thenComparing(
-                    Comparator.comparing((PriorityDiscount pd) -> pd.getDiscountType().ordinal()).reversed()
-                )
+            , Comparator.comparing((PriorityDiscount pd) -> pd.getDiscountType()).reversed()/*.reversed()*/
+                .thenComparing((PriorityDiscount pd) -> pd.getDiscount())
         );
         result.forEach(System.out::println);
 
@@ -439,5 +458,41 @@ public class Test1 extends MyTestInfra {
         System.err.println("res=" + res);
 
         assertTrue(res);
+    }
+
+
+    @Test
+    public void test_hibernate1() {
+        SessionFactory sessionFactory = new Configuration().configure()
+            .buildSessionFactory();
+        Session session = sessionFactory.openSession();
+
+        Transaction tx = null;
+
+        try {
+            tx = session.beginTransaction();
+
+            User u1 = new User();
+            u1.setName("u1");
+            u1.setUsername("un1");
+
+            LocalDateTime ldtDobri = LocalDateTime.of(1975, 9, 7, 16, 20);
+            LocalDateTime ldtKrme = LocalDateTime.of(1979, 4, 15, 9, 50);
+            LocalDateTime ldt = new Random().nextBoolean() ? ldtDobri : ldtKrme;
+            Date mojRodjendan = Date.from(ldt.atZone(ZoneId.systemDefault()).toInstant());
+
+            Relation r1 = Relation.builder().user(u1).date(mojRodjendan).build();
+            u1.getRelations().add(r1);
+
+            session.save(u1);
+            tx.commit();
+
+            assertTrue(true);
+        } catch (Exception e) {
+            System.err.println(e);
+            if (tx != null) tx.rollback();
+        } finally {
+            session.close();
+        }
     }
 }
